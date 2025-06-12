@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌳 Park Runner Adventure - ¡La Aventura Te Espera!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .tree {
+            position: absolute;
+            color: #2d5016;
+            font-size: 2rem;
+            animation: sway 4s ease-in-out infinite;
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: translateX(0px) rotate(0deg); }
+            50% { transform: translateX(10px) rotate(2deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Header */
+        .header {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23228B22" opacity="0.1"/><circle cx="20" cy="20" r="15" fill="%23006400" opacity="0.2"/><circle cx="80" cy="30" r="10" fill="%2332CD32" opacity="0.3"/><circle cx="50" cy="70" r="20" fill="%23228B22" opacity="0.2"/></svg>');
+            background-size: 200px 200px;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 2rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: slideInLeft 1s ease-out 0.5s both;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1.2rem 3rem;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(238, 90, 36, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(238, 90, 36, 0.6);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 5rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        /* Levels Section */
+        .levels {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .level-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .level-number {
+            display: inline-block;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        /* Items Section */
+        .items {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .item-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px) rotate(2deg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .item-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        /* CTA Section */
+        .final-cta {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            text-align: center;
+            color: white;
+        }
+
+        .final-cta h2 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .download-btn {
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .download-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-3px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .download-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation" id="bgAnimation"></div>
+
+    <!-- Header Section -->
+    <header class="header">
+        <div class="hero-content">
+            <h1 class="hero-title">🌳 Park Runner Adventure 🌳</h1>
+            <p class="hero-subtitle">¡Vive la aventura más emocionante corriendo por el parque!</p>
+            <a href="juego.html" class="cta-button">🎮 ¡Jugar Ahora!</a>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title fade-in">🎯 Características del Juego</h2>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">🏃‍♂️</span>
+                    <h3 class="feature-title">Acción Intensa</h3>
+                    <p>Corre, esquiva y recolecta en una aventura llena de adrenalina a través de tres emocionantes niveles del parque.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">⚡</span>
+                    <h3 class="feature-title">Power-ups Únicos</h3>
+                    <p>Descubre refrescos energizantes, zapatillas turbo y sombrillas mágicas que te darán ventajas especiales.</p>
+                </div>
+                <div class="feature-card fade-in">
+                    <span class="feature-icon">🏆</span>
+                    <h3 class="feature-title">Sistema de Puntuación</h3>
+                    <p>Gana puntos por sobrevivir, recolectar objetos y completar niveles. ¡Compite por el mejor puntaje!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Levels Section -->
+    <section class="levels">
+        <div class="container">
+            <h2 class="section-title fade-in">🗺️ Explora los Niveles</h2>
+            <div class="levels-grid">
+                <div class="level-card fade-in">
+                    <span class="level-number">Nivel 1</span>
+                    <h3>🚪 Entrada del Parque</h3>
+                    <p>Tu aventura comienza aquí. Evita charcos traicioneros y ramas caídas mientras te abres camino hacia el interior del parque.</p>
+                </div>
+                <div class="level-card fade-in">
+                    <span class="level-number">Nivel 2</span>
+                    <h3>🎠 Zona de Juegos</h3>
+                    <p>¡Cuidado con los columpios locos y toboganes impredecibles! Este nivel pondrá a prueba tus reflejos.</p>
+                </div>
+                <div class="level-card fade-in">
+                    <span class="level-number">Nivel 3</span>
+                    <h3>🌿 Laberinto Vegetal</h3>
+                    <p>El desafío final: navega por el complejo laberinto antes de que el parque cierre sus puertas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Items Section -->
+    <section class="items">
+        <div class="container">
+            <h2 class="section-title fade-in">🎁 Objetos Especiales</h2>
+            <div class="items-grid">
+                <div class="item-card fade-in">
+                    <span class="item-icon">🥤</span>
+                    <h3>Refrescos</h3>
+                    <p>+20 energía, +10 puntos</p>
+                </div>
+                <div class="item-card fade-in">
+                    <span class="item-icon">👟</span>
+                    <h3>Zapatillas Turbo</h3>
+                    <p>Velocidad temporal, +15 puntos</p>
+                </div>
+                <div class="item-card fade-in">
+                    <span class="item-icon">☂️</span>
+                    <h3>Sombrillas Mágicas</h3>
+                    <p>Escudo temporal, +20 puntos</p>
+                </div>
+                <div class="item-card fade-in">
+                    <span class="item-icon">💎</span>
+                    <h3>Gemas</h3>
+                    <p>+50 puntos</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>¿Listo para la Aventura?</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem;">¡Descarga Park Runner Adventure y conviértete en el corredor más rápido del parque!</p>
+            <div class="download-buttons">
+                <a href="juego.html" class="download-btn" id="jugar">🎮 Jugar en Navegador</a>
+                <a href="#" class="download-btn">📱 Descargar para Móvil</a>
+                <a href="#" class="download-btn">💻 Descargar para PC</a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Animated background trees
+        function createTrees() {
+            const bgAnimation = document.getElementById('bgAnimation');
+            const treeEmojis = ['🌳', '🌲', '🌴', '🍃'];
+            
+            for (let i = 0; i < 15; i++) {
+                const tree = document.createElement('div');
+                tree.className = 'tree';
+                tree.textContent = treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
+                tree.style.left = Math.random() * 100 + '%';
+                tree.style.top = Math.random() * 100 + '%';
+                tree.style.animationDelay = Math.random() * 4 + 's';
+                tree.style.animationDuration = (3 + Math.random() * 2) + 's';
+                bgAnimation.appendChild(tree);
+            }
+        }
+
+        // Scroll animations
+        function handleScrollAnimations() {
+            const elements = document.querySelectorAll('.fade-in');
+            const windowHeight = window.innerHeight;
+
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                if (elementTop < windowHeight - 100) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+
+        // Smooth scroll for CTA buttons
+        function setupSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Parallax effect for header
+        function setupParallax() {
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const header = document.querySelector('.header');
+                if (header) {
+                    header.style.transform = `translateY(${scrolled * 0.5}px)`;
+                }
+            });
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            createTrees();
+            setupSmoothScroll();
+            setupParallax();
+            handleScrollAnimations();
+            
+            window.addEventListener('scroll', handleScrollAnimations);
+        });
+
+        // Add floating particles effect
+        function createFloatingParticles() {
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = '100vh';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.background = 'rgba(255,255,255,0.6)';
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1000';
+                particle.style.animation = 'float 4s ease-in-out forwards';
+                
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 4000);
+            }, 300);
+        }
+
+        // Start particle effect after page load
+        setTimeout(createFloatingParticles, 2000);
+    </script>
+</body>
+</html>
