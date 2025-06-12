@@ -1,0 +1,9 @@
+body {
+      margin: 0;
+      padding: 0;
+      background-image: url('https://img.freepik.com/vector-gratis/fondo-escena-parque-ciudad_1308-26343.jpg?semt=ais_hybrid&w=740'); /* Ruta de tu imagen */
+      background-size: cover;  /* Ajusta la imagen al tamaño de la pantalla */
+      background-position: center;
+      background-repeat: no-repeat;
+      height: 700px;
+    }
