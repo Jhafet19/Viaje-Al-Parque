@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Park Runner Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('./fondo-juego-pixel-art-arboles-.avif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            /* centra verticalmente */
+            justify-content: center;
+        }
+
+        #gameCanvas {
+            display: block;
+            margin: 0px auto;
+            border: 3px solid #2E8B57;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+
+        }
+
+        .game-ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .start-screen,
+        .game-over-screen,
+        .level-complete-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            z-index: 200;
+        }
+
+        .start-screen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4, #45B7D1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.3s ease;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-button:hover {
+            transform: scale(1.1);
+        }
+
+        .instructions {
+            max-width: 600px;
+            margin: 20px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .level-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .leaderboard {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .achievement {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .achievement.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <div class="game-ui">
+        <div>Puntuación: <span id="score">0</span></div>
+        <div>Vidas: <span id="lives">3</span></div>
+        <div>Energía: <span id="energy">100</span></div>
+        <div>Tiempo: <span id="timer">30</span>s</div>
+        <div>Nivel: <span id="level">1</span></div>
+    </div>
+
+    <div class="leaderboard">
+        <h3>🏆 Mejores Puntuaciones</h3>
+        <div id="leaderboardList">
+            <div>1. 0 puntos</div>
+            <div>2. 0 puntos</div>
+            <div>3. 0 puntos</div>
+        </div>
+    </div>
+
+    <div id="achievement" class="achievement"></div>
+
+    <div id="startScreen" class="start-screen">
+        <h1>🌳 Park Runner Adventure 🌳</h1>
+        <div class="instructions">
+            <h2>📖 Historia del Juego</h2>
+            <p>¡Bienvenido al Parque Central! Eres un corredor aventurero que debe atravesar las diferentes zonas del
+                parque antes de que cierre. Cada zona presenta desafíos únicos y emocionantes recompensas.</p>
+
+            <div class="level-info">
+                <h3>🎯 Niveles del Juego:</h3>
+                <p><strong>Nivel 1:</strong> Entrada del Parque - Evita charcos y ramas caídas</p>
+                <p><strong>Nivel 2:</strong> Zona de Juegos - Esquiva columpios locos y toboganes</p>
+                <p><strong>Nivel 3:</strong> Laberinto Vegetal - Navega por el sendero antes del cierre</p>
+            </div>
+
+            <div class="level-info">
+                <h3>🎮 Controles:</h3>
+                <p><strong>WASD</strong> o <strong>Flechas</strong> para moverte</p>
+                <p><strong>SHIFT</strong> para correr rápido (consume más energía)</p>
+            </div>
+
+            <div class="level-info">
+                <h3>⚡ Elementos del Juego:</h3>
+                <p><strong>🥤 Refrescos:</strong> +20 energía, +10 puntos</p>
+                <p><strong>👟 Zapatillas Turbo:</strong> Velocidad temporal, +15 puntos</p>
+                <p><strong>☂️ Sombrillas Mágicas:</strong> Escudo temporal, +20 puntos</p>
+                <p><strong>💎 Gemas:</strong> +50 puntos</p>
+            </div>
+
+            <div class="level-info">
+                <h3>📊 Sistema de Puntuación:</h3>
+                <p><strong>+10 puntos</strong> por segundo sobrevivido</p>
+                <p><strong>+100 puntos</strong> por completar nivel a tiempo</p>
+                <p><strong>-50 puntos</strong> por chocar con obstáculos</p>
+                <p><strong>Bonus x2</strong> por recolecciones consecutivas</p>
+            </div>
+        </div>
+
+        <button class="game-button" onclick="startGame()">🎮 Comenzar Aventura</button>
+        <button class="game-button" onclick="showInstructions()">📋 Ver Controles</button>
+    </div>
+
+    <div id="gameOverScreen" class="game-over-screen hidden">
+        <h1>🎮 Fin del Juego</h1>
+        <p id="finalScore">Puntuación Final: 0</p>
+        <p id="gameOverMessage">¡Inténtalo de nuevo!</p>
+        <button class="game-button" onclick="restartGame()">🔄 Jugar de Nuevo</button>
+        <button class="game-button" onclick="showStartScreen()">🏠 Menú Principal</button>
+    </div>
+
+    <div id="levelCompleteScreen" class="level-complete-screen hidden">
+        <h1>🎉 ¡Nivel Completado!</h1>
+        <p id="levelScore">Puntuación del Nivel: 0</p>
+        <p id="timeBonus">Bonus por Tiempo: 0</p>
+        <button class="game-button" onclick="nextLevel()">➡️ Siguiente Nivel</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Estado del juego
+        let gameState = 'start'; // 'start', 'playing', 'paused', 'gameOver', 'levelComplete'
+        let currentLevel = 1;
+        let score = 0;
+        let lives = 3;
+        let energy = 100;
+        let timer = 30;
+        let timeBonus = 0;
+        let comboMultiplier = 1;
+        let lastCollectionTime = 0;
+
+        // Jugador
+        let player = {
+            x: 50,
+            y: 300,
+            width: 30,
+            height: 30,
+            speed: 3,
+            turboSpeed: 6,
+            isTurbo: false,
+            turboTime: 0,
+            hasShield: false,
+            shieldTime: 0,
+            color: '#4ECDC4'
+        };
+
+        // Arrays de elementos del juego
+        let obstacles = [];
+        let powerUps = [];
+        let particles = [];
+        let backgrounds = [];
+
+        // Configuración de niveles
+        const levelConfig = {
+            1: {
+                name: "Entrada del Parque",
+                time: 30,
+                obstacleTypes: ['puddle', 'branch'],
+                powerUpTypes: ['energy', 'turbo', 'gem'],
+                backgroundColor: '#87CEEB',
+                obstacles: 8,
+                powerUps: 6
+            },
+            2: {
+                name: "Zona de Juegos",
+                time: 35,
+                obstacleTypes: ['swing', 'slide', 'seesaw'],
+                powerUpTypes: ['energy', 'shield', 'gem', 'turbo'],
+                backgroundColor: '#FFB6C1',
+                obstacles: 12,
+                powerUps: 8
+            },
+            3: {
+                name: "Laberinto Vegetal",
+                time: 40,
+                obstacleTypes: ['hedge', 'squirrel', 'bee'],
+                powerUpTypes: ['energy', 'shield', 'turbo', 'gem'],
+                backgroundColor: '#98FB98',
+                obstacles: 15,
+                powerUps: 10
+            }
+        };
+
+        // Input handling
+        const keys = {};
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            keys[e.code] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+            keys[e.code] = false;
+        });
+
+        // Funciones de inicio del juego
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            currentLevel = 1;
+            score = 0;
+            lives = 3;
+            resetLevel();
+            gameState = 'playing';
+            gameLoop();
+        }
+
+        function resetLevel() {
+            const config = levelConfig[currentLevel];
+            timer = config.time;
+            energy = 100;
+            player.x = 50;
+            player.y = 300;
+            player.isTurbo = false;
+            player.hasShield = false;
+            obstacles = [];
+            powerUps = [];
+            particles = [];
+            generateLevel();
+            updateUI();
+        }
+
+        function generateLevel() {
+            const config = levelConfig[currentLevel];
+
+            // Generar obstáculos
+            for (let i = 0; i < config.obstacles; i++) {
+                const type = config.obstacleTypes[Math.floor(Math.random() * config.obstacleTypes.length)];
+                obstacles.push(createObstacle(type, 150 + i * 80));
+            }
+
+            // Generar power-ups
+            for (let i = 0; i < config.powerUps; i++) {
+                const type = config.powerUpTypes[Math.floor(Math.random() * config.powerUpTypes.length)];
+                powerUps.push(createPowerUp(type, 200 + i * 90));
+            }
+        }
+
+        function createObstacle(type, x) {
+            const obstacles_data = {
+                puddle: { width: 40, height: 20, color: '#4169E1', emoji: '💧' },
+                branch: { width: 50, height: 15, color: '#8B4513', emoji: '🌿' },
+                swing: { width: 30, height: 60, color: '#FF6347', emoji: '🎪' },
+                slide: { width: 60, height: 40, color: '#FFD700', emoji: '🛝' },
+                seesaw: { width: 80, height: 20, color: '#FF69B4', emoji: '⚖️' },
+                hedge: { width: 40, height: 50, color: '#228B22', emoji: '🌲' },
+                squirrel: { width: 25, height: 25, color: '#DEB887', emoji: '🐿️' },
+                bee: { width: 20, height: 20, color: '#FFD700', emoji: '🐝' }
+            };
+
+            const data = obstacles_data[type];
+            return {
+                x: x + Math.random() * 100,
+                y: Math.random() * (canvas.height - data.height - 100) + 50,
+                width: data.width,
+                height: data.height,
+                color: data.color,
+                type: type,
+                emoji: data.emoji,
+                active: true
+            };
+        }
+
+        function createPowerUp(type, x) {
+            const powerups_data = {
+                energy: { width: 20, height: 30, color: '#FF69B4', emoji: '🥤', value: 20 },
+                turbo: { width: 25, height: 15, color: '#00FF00', emoji: '👟', value: 15 },
+                shield: { width: 30, height: 30, color: '#9370DB', emoji: '☂️', value: 20 },
+                gem: { width: 20, height: 20, color: '#FF1493', emoji: '💎', value: 50 }
+            };
+
+            const data = powerups_data[type];
+            return {
+                x: x + Math.random() * 100,
+                y: Math.random() * (canvas.height - data.height - 100) + 50,
+                width: data.width,
+                height: data.height,
+                color: data.color,
+                type: type,
+                emoji: data.emoji,
+                value: data.value,
+                active: true,
+                pulse: 0
+            };
+        }
+
+        function updateGame() {
+            if (gameState !== 'playing') return;
+
+            // Actualizar temporizador
+            timer -= 1 / 60;
+            if (timer <= 0) {
+                if (player.x >= canvas.width - 100) {
+                    completeLevel();
+                } else {
+                    gameOver("¡Se acabó el tiempo!");
+                }
+                return;
+            }
+
+            // Actualizar jugador
+            updatePlayer();
+
+            // Actualizar elementos
+            updatePowerUps();
+            updateParticles();
+
+            // Verificar colisiones
+            checkCollisions();
+
+            // Actualizar energía
+            if (energy <= 0) {
+                lives--;
+                energy = 50;
+                if (lives <= 0) {
+                    gameOver("¡Te quedaste sin vidas!");
+                }
+            }
+
+            // Actualizar UI
+            updateUI();
+
+            // Verificar si el jugador llegó al final
+            if (player.x >= canvas.width - 50) {
+                completeLevel();
+            }
+
+            // Puntos por supervivencia
+            score += 0.17; // aproximadamente 10 puntos por segundo
+        }
+
+        function updatePlayer() {
+            let currentSpeed = player.speed;
+
+            // Manejar turbo
+            if (player.isTurbo && player.turboTime > 0) {
+                currentSpeed = player.turboSpeed;
+                player.turboTime--;
+                if (player.turboTime <= 0) {
+                    player.isTurbo = false;
+                }
+            }
+
+            // Manejar escudo
+            if (player.hasShield && player.shieldTime > 0) {
+                player.shieldTime--;
+                if (player.shieldTime <= 0) {
+                    player.hasShield = false;
+                }
+            }
+
+            // Controles de movimiento
+            const isRunning = keys['shift'] || keys['ShiftLeft'] || keys['ShiftRight'];
+
+            if (keys['w'] || keys['arrowup']) {
+                player.y = Math.max(0, player.y - currentSpeed);
+            }
+            if (keys['s'] || keys['arrowdown']) {
+                player.y = Math.min(canvas.height - player.height, player.y + currentSpeed);
+            }
+            if (keys['a'] || keys['arrowleft']) {
+                player.x = Math.max(0, player.x - currentSpeed);
+            }
+            if (keys['d'] || keys['arrowright']) {
+                player.x = Math.min(canvas.width - player.width, player.x + currentSpeed);
+            }
+
+            // Consumo de energía
+            let energyConsumption = 0.1;
+            if (isRunning) {
+                currentSpeed *= 1.5;
+                energyConsumption = 0.3;
+            }
+            if (player.isTurbo) {
+                energyConsumption = 0.2;
+            }
+
+            energy = Math.max(0, energy - energyConsumption);
+        }
+
+        function updatePowerUps() {
+            powerUps.forEach(powerUp => {
+                if (powerUp.active) {
+                    powerUp.pulse += 0.1;
+                }
+            });
+        }
+
+        function updateParticles() {
+            particles = particles.filter(particle => {
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.life--;
+                particle.alpha = particle.life / particle.maxLife;
+                return particle.life > 0;
+            });
+        }
+
+        function checkCollisions() {
+            // Colisiones con obstáculos
+            obstacles.forEach(obstacle => {
+                if (obstacle.active && isColliding(player, obstacle)) {
+                    if (!player.hasShield) {
+                        lives--;
+                        score = Math.max(0, score - 50);
+                        createImpactParticles(player.x, player.y, '#FF0000');
+                        showAchievement("¡Auch! -50 puntos");
+                    } else {
+                        showAchievement("¡Escudo activado!");
+                    }
+                    obstacle.active = false;
+                    comboMultiplier = 1;
+                }
+            });
+
+            // Colisiones con power-ups
+            powerUps.forEach(powerUp => {
+                if (powerUp.active && isColliding(player, powerUp)) {
+                    collectPowerUp(powerUp);
+                    powerUp.active = false;
+                }
+            });
+        }
+
+        function isColliding(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                rect1.x + rect1.width > rect2.x &&
+                rect1.y < rect2.y + rect2.height &&
+                rect1.y + rect1.height > rect2.y;
+        }
+
+        function collectPowerUp(powerUp) {
+            const now = Date.now();
+            if (now - lastCollectionTime < 1000) {
+                comboMultiplier = Math.min(comboMultiplier + 0.5, 3);
+            } else {
+                comboMultiplier = 1;
+            }
+            lastCollectionTime = now;
+
+            const points = Math.floor(powerUp.value * comboMultiplier);
+            score += points;
+
+            switch (powerUp.type) {
+                case 'energy':
+                    energy = Math.min(100, energy + 20);
+                    showAchievement(`+${points} puntos! ⚡ Energía recargada`);
+                    break;
+                case 'turbo':
+                    player.isTurbo = true;
+                    player.turboTime = 180; // 3 segundos a 60fps
+                    showAchievement(`+${points} puntos! 🏃 ¡Turbo activado!`);
+                    break;
+                case 'shield':
+                    player.hasShield = true;
+                    player.shieldTime = 300; // 5 segundos
+                    showAchievement(`+${points} puntos! 🛡️ ¡Escudo activado!`);
+                    break;
+                case 'gem':
+                    showAchievement(`+${points} puntos! 💎 ¡Gema preciosa!`);
+                    break;
+            }
+
+            if (comboMultiplier > 1) {
+                showAchievement(`¡Combo x${comboMultiplier.toFixed(1)}!`);
+            }
+
+            createCollectionParticles(powerUp.x, powerUp.y, powerUp.color);
+        }
+
+        function createImpactParticles(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 8,
+                    vy: (Math.random() - 0.5) * 8,
+                    color: color,
+                    life: 30,
+                    maxLife: 30,
+                    alpha: 1
+                });
+            }
+        }
+
+        function createCollectionParticles(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    color: color,
+                    life: 40,
+                    maxLife: 40,
+                    alpha: 1
+                });
+            }
+        }
+
+        function renderGame() {
+            // Limpiar canvas
+            const config = levelConfig[currentLevel];
+            ctx.fillStyle = config.backgroundColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar fondo del nivel
+            drawBackground();
+
+            // Dibujar obstáculos
+            obstacles.forEach(obstacle => {
+                if (obstacle.active) {
+                    drawObstacle(obstacle);
+                }
+            });
+
+            // Dibujar power-ups
+            powerUps.forEach(powerUp => {
+                if (powerUp.active) {
+                    drawPowerUp(powerUp);
+                }
+            });
+
+            // Dibujar partículas
+            particles.forEach(particle => {
+                drawParticle(particle);
+            });
+
+            // Dibujar jugador
+            drawPlayer();
+
+            // Dibujar línea de meta
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(canvas.width - 45, 0, 10, canvas.height);
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Arial';
+            ctx.fillText('META', canvas.width - 90, 30);
+        }
+
+        function drawBackground() {
+            // Dibujar elementos decorativos del fondo
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.arc(100 + i * 150, 100, 30, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawObstacle(obstacle) {
+            ctx.fillStyle = obstacle.color;
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+            // Dibujar emoji
+            ctx.font = '20px Arial';
+            ctx.fillText(obstacle.emoji, obstacle.x + 5, obstacle.y + obstacle.height - 5);
+        }
+
+        function drawPowerUp(powerUp) {
+            const pulseSize = Math.sin(powerUp.pulse) * 3;
+            ctx.fillStyle = powerUp.color;
+            ctx.fillRect(
+                powerUp.x - pulseSize / 2,
+                powerUp.y - pulseSize / 2,
+                powerUp.width + pulseSize,
+                powerUp.height + pulseSize
+            );
+
+            // Dibujar emoji
+            ctx.font = '16px Arial';
+            ctx.fillText(powerUp.emoji, powerUp.x + 2, powerUp.y + powerUp.height - 2);
+        }
+
+        function drawPlayer() {
+            // Efectos visuales del jugador
+            if (player.hasShield) {
+                ctx.strokeStyle = '#9370DB';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.width / 2 + 5, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            if (player.isTurbo) {
+                ctx.fillStyle = '#00FF00';
+            } else {
+                ctx.fillStyle = player.color;
+            }
+
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Dibujar cara del jugador
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Arial';
+            ctx.fillText('🏃', player.x + 5, player.y + 25);
+        }
+
+        function drawParticle(particle) {
+            ctx.globalAlpha = particle.alpha;
+            ctx.fillStyle = particle.color;
+            ctx.fillRect(particle.x, particle.y, 3, 3);
+            ctx.globalAlpha = 1;
+        }
+
+        function completeLevel() {
+            gameState = 'levelComplete';
+            timeBonus = Math.max(0, Math.floor(timer * 10));
+            score += timeBonus;
+            score += 100; // Bonus por completar nivel
+
+            document.getElementById('levelScore').textContent = `Puntuación del Nivel: ${Math.floor(score)}`;
+            document.getElementById('timeBonus').textContent = `Bonus por Tiempo: ${timeBonus}`;
+            document.getElementById('levelCompleteScreen').classList.remove('hidden');
+
+            updateLeaderboard(Math.floor(score));
+            showAchievement(`¡Nivel ${currentLevel} completado! +100 puntos`);
+        }
+
+        function nextLevel() {
+            document.getElementById('levelCompleteScreen').classList.add('hidden');
+
+            if (currentLevel < 3) {
+                currentLevel++;
+                resetLevel();
+                gameState = 'playing';
+                gameLoop(); // Reiniciar el game loop
+            } else {
+                // Juego completado
+                gameOver("¡Felicidades! ¡Completaste todos los niveles!");
+            }
+        }
+
+        function gameOver(message) {
+            gameState = 'gameOver';
+            document.getElementById('finalScore').textContent = `Puntuación Final: ${Math.floor(score)}`;
+            document.getElementById('gameOverMessage').textContent = message;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            updateLeaderboard(Math.floor(score));
+        }
+
+        function restartGame() {
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            currentLevel = 1;
+            score = 0;
+            lives = 3;
+            resetLevel();
+            gameState = 'playing';
+            gameLoop(); // Reiniciar el game loop
+        }
+
+        function showStartScreen() {
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            gameState = 'start';
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = Math.floor(score);
+            document.getElementById('lives').textContent = lives;
+            document.getElementById('energy').textContent = Math.floor(energy);
+            document.getElementById('timer').textContent = Math.floor(timer);
+            document.getElementById('level').textContent = currentLevel;
+        }
+
+        function showAchievement(text) {
+            const achievement = document.getElementById('achievement');
+            achievement.textContent = text;
+            achievement.classList.add('show');
+            setTimeout(() => {
+                achievement.classList.remove('show');
+            }, 2000);
+        }
+
+        function updateLeaderboard(newScore) {
+            let scores = JSON.parse(localStorage.getItem('parkRunnerScores') || '[0,0,0]');
+            scores.push(newScore);
+            scores.sort((a, b) => b - a);
+            scores = scores.slice(0, 3);
+            localStorage.setItem('parkRunnerScores', JSON.stringify(scores));
+
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = scores.map((score, index) =>
+                `<div>${index + 1}. ${score} puntos</div>`
+            ).join('');
+        }
+
+        function showInstructions() {
+            alert(`🎮 Controles del Juego:
+            
+WASD o Flechas: Mover al jugador
+SHIFT: Correr rápido (consume más energía)
+
+🎯 Objetivo: Llega a la meta de cada nivel antes de que se acabe el tiempo
+
+⚡ Elementos:
+🥤 Refrescos: Recargan energía
+👟 Zapatillas: Velocidad temporal
+☂️ Sombrillas: Protección temporal
+💎 Gemas: Muchos puntos
+
+¡Evita los obstáculos y recolecta power-ups para conseguir la mejor puntuación!`);
+        }
+
+        // Cargar leaderboard al inicio
+        function loadLeaderboard() {
+            let scores = JSON.parse(localStorage.getItem('parkRunnerScores') || '[0,0,0]');
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = scores.map((score, index) =>
+                `<div>${index + 1}. ${score} puntos</div>`
+            ).join('');
+        }
+
+        // Game loop principal
+        function gameLoop() {
+            if (gameState === 'playing') {
+                updateGame();
+                renderGame();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Inicializar el juego
+        loadLeaderboard();
+
+    </script>
+</body>
+
+</html>
