@@ -174,7 +174,7 @@
         <p id="finalScore">Puntuación Final: 0</p>
         <p id="gameOverMessage">¡Inténtalo de nuevo!</p>
         <button class="game-button" onclick="restartGame()">🔄 Jugar de Nuevo</button>
-        <a class="game-button" href="./index.html">🏠 Menú Principal</a>
+        <a class="game-button" href="./landing.html">🏠 Menú Principal</a>
 
     </div>
 
@@ -225,29 +225,29 @@
         const levelConfig = {
             1: {
                 name: "Entrada del Parque",
-                time: 30,
+                time: 15,
                 obstacleTypes: ['puddle', 'branch'],
                 powerUpTypes: ['energy', 'turbo', 'gem'],
                 backgroundColor: '#87CEEB',
-                obstacles: 8,
-                powerUps: 6
+                obstacles: 10,
+                powerUps: 3
             },
             2: {
                 name: "Zona de Juegos",
-                time: 35,
+                time: 10,
                 obstacleTypes: ['swing', 'slide', 'seesaw'],
                 powerUpTypes: ['energy', 'shield', 'gem', 'turbo'],
                 backgroundColor: '#FFB6C1',
-                obstacles: 12,
+                obstacles: 22,
                 powerUps: 8
             },
             3: {
                 name: "Laberinto Vegetal",
-                time: 40,
+                time: 5,
                 obstacleTypes: ['hedge', 'squirrel', 'bee'],
                 powerUpTypes: ['energy', 'shield', 'turbo', 'gem'],
                 backgroundColor: '#98FB98',
-                obstacles: 15,
+                obstacles: 40,
                 powerUps: 10
             }
         };
@@ -303,7 +303,7 @@
             // Generar power-ups
             for (let i = 0; i < config.powerUps; i++) {
                 const type = config.powerUpTypes[Math.floor(Math.random() * config.powerUpTypes.length)];
-                powerUps.push(createPowerUp(type, 200 + i * 90));
+                powerUps.push(createPowerUp(type, 2 + i * 90));
             }
         }
 
