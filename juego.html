@@ -19,13 +19,14 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-size: 100%;
+            background-size: 135%;
             height: 100vh;
             overflow: hidden;
             display: flex;
             align-items: center;
             /* centra verticalmente */
             justify-content: center;
+            overflow-y: auto;
         }
 
         #gameCanvas {
@@ -209,7 +210,8 @@
         <p id="finalScore">Puntuación Final: 0</p>
         <p id="gameOverMessage">¡Inténtalo de nuevo!</p>
         <button class="game-button" onclick="restartGame()">🔄 Jugar de Nuevo</button>
-        <button class="game-button" onclick="showStartScreen()">🏠 Menú Principal</button>
+        <a class="game-button" href="./index.html">🏠 Menú Principal</a>
+
     </div>
 
     <div id="levelCompleteScreen" class="level-complete-screen hidden">
