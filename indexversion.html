@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Misterio de Carlos - Juego de Investigación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ff6b6b;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 0 2rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        /* Sections */
+        .section {
+            padding: 5rem 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #ff6b6b;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.2);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: #ffd93d;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* Story Section */
+        .story-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5rem 0;
+            margin: 3rem 0;
+        }
+
+        .story-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 0 2rem;
+        }
+
+        /* Endings Grid */
+        .endings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .ending-card {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 217, 61, 0.1));
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #ff6b6b;
+            transition: all 0.3s ease;
+        }
+
+        .ending-card:hover {
+            transform: scale(1.05);
+            border-left-color: #ffd93d;
+        }
+
+        .ending-card h4 {
+            color: #ffd93d;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3rem 0;
+            text-align: center;
+            margin-top: 5rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+
+        /* Rain Effect */
+        .rain-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .rain-drop {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(174, 194, 224, 0.8), rgba(174, 194, 224, 0.3));
+            border-radius: 1px;
+            animation: rainFall linear infinite;
+        }
+
+        @keyframes rainFall {
+            0% {
+                transform: translateY(-100px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 100px));
+                opacity: 0.3;
+            }
+        }
+
+        /* Particles Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 107, 107, 0.5);
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Lightning effect */
+        .lightning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -3;
+            background: transparent;
+            opacity: 0;
+            transition: opacity 0.1s ease;
+        }
+
+        .lightning.flash {
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Lightning Background -->
+    <div class="lightning" id="lightning"></div>
+
+    <!-- Rain Background -->
+    <div class="rain-container" id="rainContainer"></div>
+
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">🔍 El Misterio de Carlos</div>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#caracteristicas">Características</a></li>
+                <li><a href="#historia">Historia</a></li>
+                <li><a href="#finales">Finales</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="hero-content">
+            <h1>El Misterio de Carlos</h1>
+            <p>Sumérgete en una investigación llena de suspenso donde cada decisión cuenta. Descubre la verdad detrás de la desaparición de Carlos en este thriller interactivo.</p>
+            <a href="version.html" class="cta-button">🎮 Descubre el Juego</a>
+        </div>
+    </section>
+
+    <!-- Game Stats -->
+    <section class="section">
+        <div class="stats">
+            <div class="stat-item fade-in">
+                <span class="stat-number">5</span>
+                <span>Capítulos</span>
+            </div>
+            <div class="stat-item fade-in">
+                <span class="stat-number">15</span>
+                <span>Pistas Críticas</span>
+            </div>
+            <div class="stat-item fade-in">
+                <span class="stat-number">6</span>
+                <span>Finales Únicos</span>
+            </div>
+            <div class="stat-item fade-in">
+                <span class="stat-number">45</span>
+                <span>Minutos de Juego</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section" id="caracteristicas">
+        <h2>🎮 Características Principales</h2>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🎯</span>
+                <h3>Sistema de Juego Completo</h3>
+                <p>5 capítulos con progresión narrativa, 15 pistas críticas para descubrir, múltiples finales basados en tus decisiones y un sistema de estrés que afecta la experiencia.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">🎵</span>
+                <h3>Música de Suspenso</h3>
+                <p>Audio generativo usando Web Audio API, música dinámica que cambia según tu nivel de estrés, efectos de sonido inmersivos y controles personalizables.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">👥</span>
+                <h3>Sistema de Reputación</h3>
+                <p>Interactúa con 5 facciones diferentes. Tus decisiones afectarán tu reputación con cada grupo, abriendo o cerrando caminos en la investigación.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <span class="feature-icon">💾</span>
+                <h3>Progreso Inteligente</h3>
+                <p>Auto-guardado del progreso, resumen detallado de decisiones al final, estadísticas completas de la partida y diseño responsive para todos los dispositivos.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="story-section" id="historia">
+        <div class="story-content">
+            <h2>📖 La Historia</h2>
+            <p>Carlos ha desaparecido misteriosamente, pero no es una desaparición cualquiera. Tu investigación te llevará a descubrir una red de corrupción que involucra al alcalde, jefe de policía y empresarios locales conectados con el peligroso cartel "Hermanos del Norte".</p>
+            <br>
+            <p>Cada capítulo revela más de esta conspiración mientras el tiempo se agota. ¿Podrás descubrir la verdad sobre el lavado de dinero antes de que sea demasiado tarde?</p>
+        </div>
+    </section>
+
+    <!-- Endings Section -->
+    <section class="section" id="finales">
+        <h2>🏆 Múltiples Finales</h2>
+        <div class="endings-grid">
+            <div class="ending-card fade-in">
+                <h4>"El Héroe de la Verdad"</h4>
+                <p>Transmisión en vivo de la confesión que expone toda la red de corrupción.</p>
+            </div>
+            <div class="ending-card fade-in">
+                <h4>"El Periodista Valiente"</h4>
+                <p>Publica la historia completa y logras salvar a Carlos de sus captores.</p>
+            </div>
+            <div class="ending-card fade-in">
+                <h4>"El Sacrificio del Hermano"</h4>
+                <p>Das tu vida por Carlos en un acto de valentía suprema.</p>
+            </div>
+            <div class="ending-card fade-in">
+                <h4>"El Precio de la Amistad"</h4>
+                <p>Salvas a Carlos pero pierdes las pruebas de la conspiración.</p>
+            </div>
+            <div class="ending-card fade-in">
+                <h4>"El Camino Seguro"</h4>
+                <p>Trabajas con los federales para una resolución más segura.</p>
+            </div>
+            <div class="ending-card fade-in">
+                <h4>"El Final Amargo"</h4>
+                <p>No logras salvar a Carlos completamente, pero expones la verdad.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="section" style="text-align: center;">
+        <h2>¿Listo para la Investigación?</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 2rem;">Cada decisión cuenta. Cada pista importa. El destino de Carlos está en tus manos.</p>
+        <a href="#" class="cta-button" style="font-size: 1.2rem; padding: 1.5rem 3rem;">🕵️ Comenzar Investigación</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 El Misterio de Carlos. Un juego de investigación interactivo.</p>
+        <p>🎮 Desarrollado con HTML5, CSS3 y JavaScript</p>
+    </footer>
+
+    <script>
+        // Rain system
+        class RainSystem {
+            constructor() {
+                this.rainContainer = document.getElementById('rainContainer');
+                this.rainDrops = [];
+                this.maxDrops = 150;
+                this.init();
+            }
+
+            init() {
+                this.createInitialDrops();
+                this.startRainLoop();
+                this.startLightning();
+            }
+
+            createInitialDrops() {
+                for (let i = 0; i < this.maxDrops; i++) {
+                    this.createRainDrop();
+                }
+            }
+
+            createRainDrop() {
+                const drop = document.createElement('div');
+                drop.className = 'rain-drop';
+                
+                // Random properties
+                const height = Math.random() * 15 + 10; // 10-25px height
+                const left = Math.random() * 100; // 0-100% left position
+                const duration = Math.random() * 1 + 0.5; // 0.5-1.5s duration
+                const delay = Math.random() * 2; // 0-2s delay
+                
+                drop.style.height = height + 'px';
+                drop.style.left = left + '%';
+                drop.style.animationDuration = duration + 's';
+                drop.style.animationDelay = delay + 's';
+                
+                // Opacity variation for depth
+                drop.style.opacity = Math.random() * 0.7 + 0.3;
+                
+                this.rainContainer.appendChild(drop);
+                this.rainDrops.push(drop);
+                
+                // Remove drop after animation
+                setTimeout(() => {
+                    if (drop.parentNode) {
+                        drop.parentNode.removeChild(drop);
+                        const index = this.rainDrops.indexOf(drop);
+                        if (index > -1) {
+                            this.rainDrops.splice(index, 1);
+                        }
+                    }
+                }, (duration + delay) * 1000);
+            }
+
+            startRainLoop() {
+                setInterval(() => {
+                    if (this.rainDrops.length < this.maxDrops) {
+                        for (let i = 0; i < 3; i++) { // Add 3 drops at a time
+                            this.createRainDrop();
+                        }
+                    }
+                }, 100);
+            }
+
+            startLightning() {
+                const lightning = document.getElementById('lightning');
+                
+                const triggerLightning = () => {
+                    lightning.classList.add('flash');
+                    setTimeout(() => {
+                        lightning.classList.remove('flash');
+                    }, 150);
+                    
+                    // Sometimes double flash
+                    if (Math.random() < 0.3) {
+                        setTimeout(() => {
+                            lightning.classList.add('flash');
+                            setTimeout(() => {
+                                lightning.classList.remove('flash');
+                            }, 100);
+                        }, 300);
+                    }
+                };
+                
+                // Random lightning intervals (every 8-15 seconds)
+                const scheduleNextLightning = () => {
+                    const delay = Math.random() * 7000 + 8000; // 8-15 seconds
+                    setTimeout(() => {
+                        triggerLightning();
+                        scheduleNextLightning();
+                    }, delay);
+                };
+                
+                scheduleNextLightning();
+            }
+        }
+
+        // Initialize rain system
+        const rainSystem = new RainSystem();
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Fade in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Create floating particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            
+            document.getElementById('particles').appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 6000);
+        }
+
+        // Create particles periodically
+        setInterval(createParticle, 300);
+
+        // Header background on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(15, 15, 35, 0.98)';
+            } else {
+                header.style.background = 'rgba(15, 15, 35, 0.95)';
+            }
+        });
+
+        // Add hover sound effect simulation
+        document.querySelectorAll('.feature-card, .ending-card, .cta-button').forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                // Simulate sound effect with visual feedback
+                element.style.transform = element.style.transform + ' scale(1.02)';
+            });
+            
+            element.addEventListener('mouseleave', () => {
+                element.style.transform = element.style.transform.replace(' scale(1.02)', '');
+            });
+        });
+
+        // Typing effect for hero title
+        function typeWriter(element, text, speed = 100) {
+            let i = 0;
+            element.innerHTML = '';
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        // Initialize typing effect when page loads
+        window.addEventListener('load', () => {
+            const heroTitle = document.querySelector('.hero h1');
+            const originalText = heroTitle.textContent;
+            typeWriter(heroTitle, originalText, 150);
+        });
+    </script>
+</body>
+</html>

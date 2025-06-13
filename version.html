@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorias de Asfalto - Juego Completo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Condensed:wght@300;400;700&family=Courier+Prime:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+            line-height: 1.4;
+        }
+        
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+        }
+        
+        /* Pantalla de inicio */
+        .title-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23111" width="1200" height="800"/><circle fill="%23333" cx="200" cy="200" r="3"/><circle fill="%23444" cx="800" cy="300" r="2"/><circle fill="%23333" cx="1000" cy="600" r="4"/><circle fill="%23555" cx="400" cy="700" r="2"/></svg>');
+            background-size: cover;
+            z-index: 1000;
+        }
+        
+        .game-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: clamp(3rem, 8vw, 6rem);
+            color: #ff6b35;
+            text-shadow: 0 0 20px rgba(255, 107, 53, 0.5), 0 0 40px rgba(255, 107, 53, 0.3);
+            margin-bottom: 1rem;
+            letter-spacing: 4px;
+            text-align: center;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 20px rgba(255, 107, 53, 0.5), 0 0 40px rgba(255, 107, 53, 0.3); }
+            to { text-shadow: 0 0 30px rgba(255, 107, 53, 0.8), 0 0 60px rgba(255, 107, 53, 0.5); }
+        }
+        
+        .game-subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            color: #cccccc;
+            margin-bottom: 3rem;
+            text-align: center;
+            max-width: 600px;
+            font-style: italic;
+        }
+        
+        .start-btn {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.5);
+        }
+        
+        /* Interfaz principal del juego */
+        .game-interface {
+            display: none;
+            width: 100%;
+            height: 100%;
+            grid-template-areas: 
+                "header header header"
+                "sidebar main map"
+                "sidebar main map";
+            grid-template-columns: 300px 1fr 250px;
+            grid-template-rows: 80px 1fr;
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        .game-header {
+            grid-area: header;
+            background: rgba(0,0,0,0.9);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border: 1px solid #333;
+        }
+        
+        .header-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.8rem;
+            color: #ff6b35;
+            letter-spacing: 2px;
+        }
+        
+        .chapter-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chapter-display {
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.1rem;
+            color: #f39c12;
+            font-weight: bold;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #f39c12);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        
+        .progress-text {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        .mental-state {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stress-bar {
+            width: 100px;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .stress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #f39c12, #e74c3c);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        
+        .sidebar {
+            grid-area: sidebar;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            grid-area: main;
+            background: rgba(0,0,0,0.85);
+            border-radius: 10px;
+            padding: 30px;
+            border: 1px solid #333;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .map-panel {
+            grid-area: map;
+            background: rgba(0,0,0,0.9);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+        
+        .panel {
+            background: rgba(0,0,0,0.9);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+        
+        .panel-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.4rem;
+            color: #ff6b35;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        /* Sistema de reputación */
+        .reputation-item {
+            margin: 12px 0;
+        }
+        
+        .reputation-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: #ccc;
+        }
+        
+        .reputation-bar {
+            width: 100%;
+            height: 10px;
+            background: #222;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+        
+        .rep-fill {
+            height: 100%;
+            transition: width 0.6s ease;
+            border-radius: 5px;
+        }
+        
+        .rep-police { background: linear-gradient(90deg, #3498db, #2980b9); }
+        .rep-media { background: linear-gradient(90deg, #f39c12, #e67e22); }
+        .rep-citizens { background: linear-gradient(90deg, #27ae60, #229954); }
+        .rep-gangs { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .rep-government { background: linear-gradient(90deg, #9b59b6, #8e44ad); }
+        
+        /* Contenido principal */
+        .location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .location-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2.5rem;
+            color: #ff6b35;
+            letter-spacing: 2px;
+        }
+        
+        .story-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            text-align: justify;
+            color: #e0e0e0;
+        }
+        
+        .inner-thought {
+            background: rgba(255, 107, 53, 0.1);
+            border-left: 4px solid #ff6b35;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #f39c12;
+        }
+        
+        .dialogue {
+            background: rgba(52, 73, 94, 0.3);
+            border-left: 4px solid #3498db;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .revelation {
+            background: rgba(231, 76, 60, 0.2);
+            border: 2px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            animation: pulse-red 2s infinite;
+        }
+        
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        
+        .story-update {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 107, 53, 0.1);
+            border-left: 3px solid #ff6b35;
+            border-radius: 0 5px 5px 0;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .choices-container {
+            margin-top: 30px;
+        }
+        
+        .choices-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 1.3rem;
+            color: #ccc;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        
+        .choice-btn {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: #ecf0f1;
+            border: 2px solid #444;
+            padding: 18px 25px;
+            margin: 12px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 1rem;
+            line-height: 1.5;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .choice-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .choice-btn:hover::before {
+            left: 100%;
+        }
+        
+        .choice-btn:hover {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            border-color: #ff6b35;
+            transform: translateX(8px);
+        }
+        
+        .choice-btn.critical {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            animation: criticalPulse 2s infinite;
+        }
+        
+        @keyframes criticalPulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(231, 76, 60, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(231, 76, 60, 0.8); }
+        }
+        
+        .choice-btn.critical:hover {
+            border-color: #ff6b35;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .choice-consequence {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        /* Inventario */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .inventory-item {
+            background: #333;
+            border: 2px solid #444;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .inventory-item:hover {
+            border-color: #ff6b35;
+            background: #444;
+        }
+        
+        .inventory-item.critical {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            animation: glow-red 3s infinite;
+        }
+        
+        @keyframes glow-red {
+            0%, 100% { box-shadow: 0 0 5px rgba(231, 76, 60, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.8); }
+        }
+        
+        /* Controles de audio */
+        .audio-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            z-index: 100;
+        }
+        
+        .audio-btn {
+            background: #444;
+            color: white;
+            border: 1px solid #666;
+            padding: 8px 12px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .audio-btn:hover {
+            background: #555;
+        }
+        
+        .audio-btn.active {
+            background: #ff6b35;
+            border-color: #ff6b35;
+        }
+        
+        /* Finales */
+        .ending-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.95));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            z-index: 200;
+            animation: fadeIn 1s ease;
+        }
+        
+        .ending-title {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 3rem;
+            color: #ff6b35;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        .ending-content {
+            max-width: 800px;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        
+        .ending-stats {
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid #ff6b35;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            max-width: 600px;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 10px;
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .game-interface {
+                grid-template-areas: 
+                    "header header"
+                    "main main"
+                    "sidebar map";
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 80px 1fr auto;
+            }
+            
+            .chapter-info {
+                flex-direction: row;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .game-interface {
+                grid-template-areas: 
+                    "header"
+                    "main"
+                    "sidebar"
+                    "map";
+                grid-template-columns: 1fr;
+                grid-template-rows: 80px 1fr auto auto;
+            }
+            
+            .sidebar {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            
+            .panel {
+                min-width: 250px;
+            }
+            
+            .chapter-info {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .progress-bar {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Pantalla de título -->
+        <div id="titleScreen" class="title-screen">
+            <h1 class="game-title">Memorias de Asfalto</h1>
+            <p class="game-subtitle">
+                Un thriller psicológico en las calles de una ciudad que nunca olvida.<br>
+                Cada decisión tiene consecuencias. Cada recuerdo esconde una verdad.<br>
+                <strong>¿Podrás descubrir qué pasó con Carlos?</strong>
+            </p>
+            <button class="start-btn" onclick="startGame()">Iniciar Investigación</button>
+        </div>
+        
+        <!-- Interfaz principal del juego -->
+        <div id="gameInterface" class="game-interface">
+            <!-- Header -->
+            <div class="game-header">
+                <div class="header-title">Memorias de Asfalto</div>
+                <div class="chapter-info">
+                    <div class="chapter-display" id="chapterDisplay">Capítulo 1: El Regreso</div>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div id="progressBar" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                </div>
+                <div class="mental-state">
+                    <span>Estrés:</span>
+                    <div class="stress-bar">
+                        <div id="stressBar" class="stress-fill" style="width: 20%"></div>
+                    </div>
+                    <span id="stressValue">20%</span>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Panel de reputación -->
+                <div class="panel">
+                    <h3 class="panel-title">Reputación</h3>
+                    <div class="reputation-item">
+                        <div class="reputation-label">
+                            <span>Policía</span>
+                            <span id="policeValue">50</span>
+                        </div>
+                        <div class="reputation-bar">
+                            <div id="policeBar" class="rep-fill rep-police" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="reputation-item">
+                        <div class="reputation-label">
+                            <span>Medios</span>
+                            <span id="mediaValue">50</span>
+                        </div>
+                        <div class="reputation-bar">
+                            <div id="mediaBar" class="rep-fill rep-media" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="reputation-item">
+                        <div class="reputation-label">
+                            <span>Ciudadanos</span>
+                            <span id="citizensValue">50</span>
+                        </div>
+                        <div class="reputation-bar">
+                            <div id="citizensBar" class="rep-fill rep-citizens" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="reputation-item">
+                        <div class="reputation-label">
+                            <span>Pandillas</span>
+                            <span id="gangsValue">50</span>
+                        </div>
+                        <div class="reputation-bar">
+                            <div id="gangsBar" class="rep-fill rep-gangs" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="reputation-item">
+                        <div class="reputation-label">
+                            <span>Gobierno</span>
+                            <span id="governmentValue">50</span>
+                        </div>
+                        <div class="reputation-bar">
+                            <div id="governmentBar" class="rep-fill rep-government" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Panel de evidencias -->
+                <div class="panel">
+                    <h3 class="panel-title">Evidencias</h3>
+                    <div id="inventory" class="inventory-grid"></div>
+                </div>
+            </div>
+            
+            <!-- Contenido principal -->
+            <div class="main-content" id="mainContent">
+                <div class="location-header">
+                    <h2 id="locationTitle" class="location-title">Cargando...</h2>
+                </div>
+                <div id="storyContent" class="story-content"></div>
+                <div id="choicesContainer" class="choices-container"></div>
+            </div>
+            
+            <!-- Panel del mapa -->
+            <div class="map-panel">
+                <h3 class="panel-title">Progreso de Investigación</h3>
+                <div id="investigationProgress" style="font-size: 0.9rem; color: #ccc;">
+                    <div style="margin-bottom: 10px;">
+                        <strong>Pistas encontradas:</strong> <span id="clueCount">0</span>/15
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <strong>Verdad revelada:</strong> <span id="truthProgress">0</span>%
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>Capítulo actual:</strong> <span id="currentChapter">1</span>/5
+                    </div>
+                    <div style="border-top: 1px solid #444; padding-top: 15px;">
+                        <div style="font-size: 0.8rem; color: #888;">
+                            <div>🔍 Investigando</div>
+                            <div>💡 Pista crítica</div>
+                            <div>⚠️ Decisión importante</div>
+                            <div>🎯 Objetivo completado</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controles de audio -->
+        <div class="audio-controls">
+            <button id="musicToggle" class="audio-btn active" onclick="toggleMusic()">🎵 Música</button>
+            <button id="volumeBtn" class="audio-btn" onclick="changeVolume()">🔊 Vol</button>
+        </div>
+    </div>
+
+    <script>
+        // Estado global del juego
+        let gameState = {
+            currentChapter: 1,
+            currentScene: 0,
+            progress: 0,
+            stress: 20,
+            reputation: {
+                police: 50,
+                media: 50,
+                citizens: 50,
+                gangs: 50,
+                government: 50
+            },
+            inventory: [],
+            cluesFound: 0,
+            truthRevealed: 0,
+            flags: {},
+            choices: [],
+            musicEnabled: true,
+            volume: 0.3,
+            gameStarted: false
+        };
+
+        // Capítulos del juego con historia completa
+        const gameChapters = {
+            1: {
+                title: "El Regreso",
+                scenes: [
+                    {
+                        location: "Terminal de Autobuses",
+                        description: "El aire espeso de la terminal me golpea como un puño. Diez años fuera de esta ciudad, pero el olor a diesel, sudor y esperanza perdida sigue siendo el mismo. Los altavoces anuncian destinos que una vez soñé alcanzar, pero ahora solo hay uno que importa: encontrar a Carlos.",
+                        thoughts: "Han pasado diez años desde que me fui. Diez años tratando de olvidar este lugar, y ahora estoy de vuelta por Carlos. Su última llamada sonaba desesperada... '¿Adrián? Necesito tu ayuda, hermano. Hay algo grande aquí, algo que no puedo manejar solo.' Eso fue hace una semana. Desde entonces, silencio.",
+                        choices: [
+                            {
+                                text: "Ir directamente a la comisaría para reportar la desaparición",
+                                consequences: "Oficial pero arriesgado. La policía podría estar involucrada.",
+                                action: () => {
+                                    addClue("Primera impresión oficial");
+                                    changeReputation('police', 10);
+                                    addStoryUpdate("Tomo un taxi hacia la comisaría. El conductor me mira por el espejo retrovisor. 'Usted no es de aquí, ¿verdad? Se nota por cómo mira la ciudad.' Tiene razón. Todo ha cambiado, pero a la vez nada ha cambiado.");
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Visitar el apartamento de Carlos primero",
+                                consequences: "Directo pero peligroso. Podría encontrar evidencia importante.",
+                                action: () => {
+                                    addClue("Evidencia del apartamento");
+                                    changeStress(10);
+                                    addStoryUpdate("Decido ir directamente al apartamento de Carlos. Si algo le pasó, las respuestas estarán ahí. El autobús me lleva por calles que reconozco pero que se sienten extrañas, como si fueran de un sueño medio olvidado.");
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Buscar a antiguos contactos en el periódico local",
+                                consequences: "Cauteloso e informativo. Los periodistas siempre saben más de lo que publican.",
+                                action: () => {
+                                    addClue("Conexiones periodísticas");
+                                    changeReputation('media', 15);
+                                    addStoryUpdate("El Diario 'La Verdad' sigue en el mismo edificio de siempre. Camino por las calles del centro, observando los cambios. Nuevos edificios, nuevos negocios, pero las mismas caras de cansancio en la gente.");
+                                    nextScene();
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        location: "Primera Investigación",
+                        description: "Comienzo mi investigación siguiendo las pistas iniciales. Cada paso me acerca más a la verdad, pero también al peligro. La ciudad guarda secretos, y Carlos había empezado a descubrirlos.",
+                        thoughts: "Carlos no desapareció por casualidad. Hay algo más grande detrás de esto, algo que alguien quiere mantener oculto. Puedo sentirlo en el aire, en las miradas esquivas de la gente, en el silencio incómodo cuando menciono su nombre.",
+                        choices: [
+                            {
+                                text: "Continuar la investigación con lo que he aprendido",
+                                action: () => {
+                                    addClue("Patrón de comportamiento sospechoso");
+                                    addStoryUpdate("Las piezas comienzan a formar un patrón. Carlos estaba investigando algo grande, algo que involucra a gente poderosa. Es hora de profundizar.");
+                                    nextChapter();
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            2: {
+                title: "Primeras Pistas",
+                scenes: [
+                    {
+                        location: "Comisaría Central",
+                        description: "El edificio de concreto gris parece más deteriorado que antes. El sargento Morales me recibe con una mezcla de reconocimiento y desconfianza. Sus ojos evitan los míos cuando menciono a Carlos.",
+                        thoughts: "Morales sabe algo que no me está diciendo. Su nerviosismo es evidente. La forma en que tamborilea los dedos sobre el escritorio, cómo evita el contacto visual... He visto esa actitud antes en gente que oculta información importante.",
+                        dialogue: "'Carlos andaba metido en cosas peligrosas, Adrián. Hacía preguntas que no debía hacer, a gente que no perdona. Mi consejo es que te olvides de él y regreses de donde viniste.'",
+                        choices: [
+                            {
+                                text: "Presionar sobre qué tipo de preguntas hacía Carlos",
+                                consequences: "Agresivo. Podría obtener información valiosa pero dañar relaciones.",
+                                action: () => {
+                                    addClue("Carlos investigaba lavado de dinero", true);
+                                    changeReputation('police', -10);
+                                    changeStress(5);
+                                    addRevelation("Morales baja la voz y mira hacia la puerta. 'Carlos estaba investigando el lavado de dinero. Tenía nombres, fechas, movimientos bancarios. Demasiada información para su propio bien. Y creo que alguien se enteró.'");
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Preguntar por el expediente oficial de la desaparición",
+                                consequences: "Formal. Podría obtener acceso oficial o ser rechazado.",
+                                action: () => {
+                                    if (gameState.reputation.police > 60) {
+                                        addClue("Expediente oficial manipulado", true);
+                                        addRevelation("Morales me entrega una carpeta delgada. 'Esto es todo lo que tenemos oficialmente.' Pero noto que faltan páginas, y hay evidencia clara de manipulación en los documentos.");
+                                    } else {
+                                        addStoryUpdate("'No puedo darte esa información, Adrián. Órdenes de arriba. Lo siento.' Morales cierra la carpeta firmemente.");
+                                        changeStress(5);
+                                    }
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Apelar a nuestra amistad del pasado",
+                                consequences: "Emocional. Podría ablandar su actitud si aún confía en mí.",
+                                action: () => {
+                                    addClue("Fotografía comprometedora");
+                                    changeReputation('police', 5);
+                                    gameState.flags.moralesHelped = true;
+                                    addStoryUpdate("'Por los viejos tiempos, Adrián.' Morales saca una fotografía de su cajón. 'Encontramos esto en el carro de Carlos. No está en el expediente oficial.' La foto muestra a Carlos reuniéndose con un hombre en traje que no reconozco.");
+                                    nextScene();
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        location: "Apartamento de Carlos",
+                        description: "El edificio colonial en el centro histórico muestra su edad. Subo las escaleras crujientes hasta el apartamento 3B. La puerta está entreabierta, balanceándose ligeramente con la brisa que entra por la ventana rota del pasillo.",
+                        thoughts: "Esto no está bien. Carlos nunca dejaría su puerta abierta. Era paranoico con la seguridad, especialmente después de que empezó a recibir esas llamadas extrañas que me mencionó en su última conversación.",
+                        choices: [
+                            {
+                                text: "Buscar en el escondite secreto de nuestra infancia",
+                                consequences: "Nostálgico. Solo yo sabría dónde buscar.",
+                                action: () => {
+                                    addClue("USB con archivos de Carlos", true);
+                                    addRevelation("Detrás del marco de la foto de su graduación, encuentro un pequeño USB y una nota con mi nombre. 'Adrián, si estás leyendo esto, significa que algo me pasó. En este USB está todo lo que descubrí. Confío en que harás lo correcto. Tu hermano, Carlos.'");
+                                    gameState.flags.foundUSB = true;
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Examinar los documentos esparcidos por el suelo",
+                                consequences: "Metódico. Podría encontrar pistas en lo que los intrusos dejaron atrás.",
+                                action: () => {
+                                    addClue("Lista de empresas fantasma");
+                                    addRevelation("Entre los papeles esparcidos encuentro fragmentos de la investigación de Carlos. Nombres tachados, números de cuenta bancaria, direcciones de empresas que parecen no existir realmente. Carlos había identificado una red compleja de lavado de dinero.");
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Preguntar a los vecinos sobre actividad sospechosa",
+                                consequences: "Social. Los vecinos podrían haber visto algo importante.",
+                                action: () => {
+                                    addClue("Testimonio de Doña Carmen");
+                                    changeReputation('citizens', 10);
+                                    addStoryUpdate("Doña Carmen del 2A me recibe con café y preocupación. 'Ese muchacho Carlos andaba muy nervioso últimamente, mijo. Llegaban carros elegantes a buscarlo, y él siempre salía pálido después de esas visitas. La última vez, hace tres días, se llevaron cajas de su apartamento.'");
+                                    nextScene();
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        location: "Análisis de Evidencias",
+                        description: "De vuelta en mi hotel, extiendo todas las evidencias sobre la cama. Fotografías, documentos, testimonios... Las piezas del rompecabezas empiezan a formar una imagen aterradora.",
+                        thoughts: "Carlos descubrió algo que podría derribar a gente muy poderosa. No es solo corrupción local, es algo mucho más grande. Las empresas fantasma, las transferencias bancarias, las reuniones secretas... todo apunta a una red de lavado de dinero a gran escala.",
+                        choices: [
+                            {
+                                text: "Analizar el USB de Carlos (si lo encontré)",
+                                condition: () => gameState.flags.foundUSB,
+                                action: () => {
+                                    addClue("Red de lavado internacional", true);
+                                    addRevelation("El USB contiene archivos que revelan una red de lavado de dinero que conecta empresarios locales con carteles internacionales. Los nombres incluyen al alcalde, varios empresarios prominentes, y sorprendentemente, al jefe de policía.");
+                                    gameState.flags.knowsFullTruth = true;
+                                    nextChapter();
+                                }
+                            },
+                            {
+                                text: "Continuar con la información que tengo",
+                                action: () => {
+                                    addStoryUpdate("Aunque no tengo toda la información, lo que he descubierto es suficiente para saber que Carlos estaba en peligro real. Es hora de profundizar en la investigación.");
+                                    nextChapter();
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            3: {
+                title: "La Conspiración",
+                scenes: [
+                    {
+                        location: "Café 'El Encuentro'",
+                        description: "Una mujer me contactó anónimamente, diciendo que tenía información sobre Carlos. Elena Vásquez, según se presenta, es una contadora que trabajaba para una de las empresas que Carlos estaba investigando.",
+                        thoughts: "Elena parece genuinamente asustada. Sus manos tiemblan mientras sostiene la taza de café, y constantemente mira por encima del hombro. Lo que me va a decir cambiará todo lo que creía saber sobre esta ciudad.",
+                        dialogue: "'Carlos descubrió que el alcalde Mendoza, el jefe de policía Herrera y varios empresarios están involucrados en una red de lavado de dinero. Tienen conexiones directas con el cartel de los Hermanos del Norte. Yo llevaba las cuentas... hasta que me di cuenta de lo que realmente estaba haciendo.'",
+                        choices: [
+                            {
+                                text: "Pedir pruebas concretas de las acusaciones",
+                                consequences: "Directo. Necesito evidencia sólida para actuar.",
+                                action: () => {
+                                    addClue("Fotografías de reuniones secretas", true);
+                                    addRevelation("Elena me entrega un sobre con fotografías de reuniones secretas entre funcionarios y conocidos narcotraficantes. 'Tomé estas fotos como seguro de vida. Carlos tenía copias también.'");
+                                    changeStress(15);
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Preguntar dónde está Carlos ahora",
+                                consequences: "Urgente. Su vida podría estar en peligro inmediato.",
+                                action: () => {
+                                    addClue("Ubicación de Carlos", true);
+                                    addRevelation("Elena baja la voz hasta casi un susurro. 'Lo tienen en un almacén en el puerto. Almacén 47. Pero Adrián... creo que ya es demasiado tarde. Hace dos días que no se mueve nada por allá.'");
+                                    changeStress(25);
+                                    gameState.flags.knowsLocation = true;
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Preguntarle por qué decidió ayudarme",
+                                consequences: "Cauteloso. Necesito saber si puedo confiar en ella.",
+                                action: () => {
+                                    addStoryUpdate("'Porque Carlos me salvó la vida una vez. Cuando descubrí lo que estaba pasando, quise salir, pero ellos no te dejan salir así nomás. Carlos me ayudó a esconderme, me dio dinero para desaparecer. Le debo esto.'");
+                                    changeReputation('citizens', 15);
+                                    nextScene();
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        location: "Decisión Crítica",
+                        description: "Tengo información suficiente para exponer la conspiración, pero Carlos sigue desaparecido y posiblemente en peligro mortal. Cada minuto cuenta, pero también cada decisión que tome ahora determinará no solo mi destino, sino el de Carlos y toda la ciudad.",
+                        thoughts: "Puedo publicar la historia inmediatamente y exponer a los corruptos, pero eso podría firmar la sentencia de muerte de Carlos si aún está vivo. O puedo intentar rescatarlo primero, arriesgando que destruyan todas las pruebas y que la corrupción continúe. No hay decisiones fáciles en este juego.",
+                        choices: [
+                            {
+                                text: "Publicar la historia inmediatamente en todos los medios",
+                                critical: true,
+                                consequences: "La presión pública podría salvar a Carlos, pero también podría acelerar su muerte.",
+                                action: () => {
+                                    gameState.flags.publishedStory = true;
+                                    addRevelation("Envío toda la información a contactos en medios nacionales e internacionales. En una hora, la historia está en primera plana. La ciudad explota en protestas, pero Carlos...");
+                                    changeReputation('media', 30);
+                                    changeReputation('government', -40);
+                                    changeReputation('police', -30);
+                                    nextChapter();
+                                }
+                            },
+                            {
+                                text: "Intentar rescatar a Carlos primero",
+                                critical: true,
+                                consequences: "Arriesgo todo por salvar a mi amigo, pero podría perder las pruebas.",
+                                action: () => {
+                                    gameState.flags.rescueAttempt = true;
+                                    addRevelation("Decido arriesgar todo por salvar a mi amigo. Las pruebas no significan nada si Carlos muere. Me dirijo al puerto en la oscuridad de la noche.");
+                                    changeStress(30);
+                                    nextChapter();
+                                }
+                            },
+                            {
+                                text: "Contactar a la policía federal primero",
+                                critical: true,
+                                consequences: "Podría ser la opción más segura, pero también la más lenta.",
+                                action: () => {
+                                    gameState.flags.contactedFeds = true;
+                                    addRevelation("Contacto a un agente federal que conocía de mis días como periodista. 'Necesitamos 48 horas para montar la operación,' me dice. Pero Carlos podría no tener 48 horas.");
+                                    changeReputation('government', 20);
+                                    nextChapter();
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            4: {
+                title: "La Confrontación",
+                scenes: [
+                    {
+                        location: "Camino al Puerto",
+                        description: gameState.flags.rescueAttempt ? 
+                            "Conduzco hacia el puerto en la oscuridad. Las luces de la ciudad brillan a lo lejos, pero aquí solo hay sombras, contenedores abandonados y el olor salado del mar mezclado con diesel." :
+                            gameState.flags.publishedStory ?
+                            "Después de publicar la historia, recibo una llamada de un número desconocido. 'Si quieres ver a tu amigo vivo, ven al almacén 47 del puerto. Solo. Tienes una hora.'" :
+                            "Los federales me contactan. 'Hemos localizado a tu amigo. Pero necesitamos que vengas con nosotros como testigo. Es la única forma de hacer esto legalmente.'",
+                        thoughts: gameState.flags.rescueAttempt ?
+                            "Esto podría ser una trampa, pero no puedo abandonar a Carlos. Hemos sido hermanos desde la infancia, y los hermanos no se abandonan." :
+                            gameState.flags.publishedStory ?
+                            "Sabía que esto pasaría. Al publicar la historia, forcé su mano. Ahora tengo que enfrentar las consecuencias de mis decisiones." :
+                            "Los federales parecen competentes, pero ¿puedo confiar en que no hay infiltrados? En esta ciudad, la corrupción llega a todos lados.",
+                        choices: [
+                            {
+                                text: "Ir al almacén del puerto",
+                                action: () => {
+                                    addStoryUpdate("Me dirijo al puerto. El almacén 47 se alza como una sombra amenazante contra el cielo nocturno. No hay vuelta atrás.");
+                                    nextScene();
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        location: "Almacén 47",
+                        description: "El interior del almacén está débilmente iluminado por unas pocas bombillas colgantes. Encuentro a Carlos atado a una silla en el centro del espacio. Está vivo, pero herido. El alcalde Mendoza sale de las sombras acompañado de dos hombres armados.",
+                        thoughts: "Carlos levanta la vista y me ve. Sus ojos me dicen todo: sabía que vendría por él, pero también sabe que esto podría ser el final para ambos. Hay sangre seca en su camisa, pero está consciente.",
+                        dialogue: "'Adrián Vásquez, el periodista heroico que regresa a casa.' Mendoza sonríe fríamente. 'Tu amigo aquí ha sido muy... persistente en sus preguntas. Pero las preguntas tienen consecuencias, como estás a punto de descubrir.'",
+                        choices: [
+                            {
+                                text: "Negociar la liberación de Carlos",
+                                consequences: "Diplomático pero arriesgado. Podría funcionar o ser una trampa.",
+                                action: () => {
+                                    if (gameState.flags.publishedStory) {
+                                        addRevelation("'Ya es demasiado tarde para negociar, periodista. Tu historia ya está en todas partes. Los federales vienen en camino. Pero puedes acompañar a tu amigo en su último viaje.'");
+                                        changeStress(20);
+                                    } else {
+                                        addRevelation("'Entrégame todas las pruebas que tienes, y tu amigo vivirá. Tienes mi palabra.' Mendoza extiende la mano, esperando.");
+                                        gameState.flags.negotiationOffered = true;
+                                    }
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Revelar que ya contacté a las autoridades federales",
+                                consequences: "Amenazante. Podría disuadirlos o acelerar la violencia.",
+                                action: () => {
+                                    if (gameState.flags.contactedFeds) {
+                                        addRevelation("'Los federales ya vienen en camino, Mendoza. En 20 minutos este lugar estará rodeado.' Su expresión cambia, mostrando por primera vez algo de preocupación.");
+                                        gameState.flags.fedsComingThreat = true;
+                                    } else {
+                                        addRevelation("'Mentira. Si hubieras hecho eso, ya estarían aquí.' Mendoza sonríe fríamente. 'Siempre fuiste mal mentiroso, Adrián.'");
+                                        changeStress(10);
+                                    }
+                                    nextScene();
+                                }
+                            },
+                            {
+                                text: "Activar discretamente la grabadora que llevo escondida",
+                                consequences: "Arriesgado pero inteligente. Podría obtener una confesión.",
+                                action: () => {
+                                    gameState.flags.recordingStarted = true;
+                                    addStoryUpdate("Discretamente activo la grabadora digital que tenía escondida en mi chaqueta. Cada palabra que diga Mendoza ahora está siendo registrada.");
+                                    nextScene();
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        location: "El Momento de la Verdad",
+                        description: "Todo se reduce a este momento. Las decisiones que he tomado a lo largo de la investigación determinarán no solo mi destino y el de Carlos, sino el futuro de toda la ciudad. Mendoza está perdiendo la paciencia.",
+                        thoughts: "Carlos me mira y asiente ligeramente. Sabe lo que tengo que hacer. Hemos llegado demasiado lejos para echarnos atrás ahora. La verdad tiene que salir a la luz, sin importar el costo.",
+                        dialogue: "'Se acabó el tiempo de charlas, periodista. O me das lo que quiero, o tu amigo y tú van a tener un accidente muy lamentable en el puerto.'",
+                        choices: [
+                            {
+                                text: "Entregar las pruebas para salvar a Carlos",
+                                critical: true,
+                                consequences: "Carlos vivirá, pero la corrupción continuará.",
+                                action: () => {
+                                    gameState.flags.sacrificedEvidence = true;
+                                    addRevelation("Entrego todas las pruebas que tengo. 'Carlos vivirá, pero la verdad muere aquí,' pienso mientras veo cómo Mendoza quema los documentos.");
+                                    nextChapter();
+                                }
+                            },
+                            {
+                                text: "Revelar que la grabación ya está siendo transmitida en vivo",
+                                critical: true,
+                                condition: () => gameState.flags.recordingStarted,
+                                consequences: "Jugada maestra, pero extremadamente peligrosa.",
+                                action: () => {
+                                    gameState.flags.liveTransmission = true;
+                                    addRevelation("'La grabación de esta conversación se está transmitiendo en vivo a tres estaciones de noticias diferentes. Ya es demasiado tarde, Mendoza. Todo el país está escuchando.'");
+                                    nextChapter();
+                                }
+                            },
+                            {
+                                text: "Crear una distracción para que Carlos escape",
+                                critical: true,
+                                consequences: "Heroico pero probablemente fatal para mí.",
+                                action: () => {
+                                    gameState.flags.heroicSacrifice = true;
+                                    addRevelation("Me lanzo contra uno de los guardias, gritándole a Carlos que corra. Es mi única oportunidad de salvarlo, aunque me cueste la vida.");
+                                    nextChapter();
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            5: {
+                title: "Resolución",
+                scenes: [
+                    {
+                        location: "El Desenlace",
+                        description: "Los eventos de esta noche cambiarán la ciudad para siempre. Las consecuencias de cada decisión que tomé se revelan ahora, en este momento final.",
+                        thoughts: "Todo ha llevado a este momento. Cada elección, cada riesgo, cada sacrificio... ahora veré si valió la pena.",
+                        choices: [
+                            {
+                                text: "Ver cómo termina todo",
+                                action: () => {
+                                    showEnding();
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Sistema de audio mejorado
+        let audioContext;
+        let backgroundOscillators = [];
+        let gainNode;
+
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                createSuspenseMusic();
+            } catch (e) {
+                console.log("Audio no disponible en este navegador");
+            }
+        }
+
+        function createSuspenseMusic() {
+            if (!audioContext) return;
+
+            // Crear múltiples osciladores para una música más rica
+            const frequencies = [55, 82.5, 110, 165]; // A1, E2, A2, E3
+            backgroundOscillators = [];
+
+            gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(gameState.volume, audioContext.currentTime);
+            gainNode.connect(audioContext.destination);
+
+            frequencies.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const oscGain = audioContext.createGain();
+                
+                oscillator.type = index % 2 === 0 ? 'sine' : 'triangle';
+                oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                
+                oscGain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                
+                oscillator.connect(oscGain);
+                oscGain.connect(gainNode);
+                
+                if (gameState.musicEnabled) {
+                    oscillator.start();
+                    backgroundOscillators.push({ osc: oscillator, gain: oscGain, baseFreq: freq });
+                }
+            });
+
+            // Crear variaciones dinámicas
+            if (gameState.musicEnabled) {
+                createMusicVariations();
+            }
+        }
+
+        function createMusicVariations() {
+            setInterval(() => {
+                if (gameState.musicEnabled && audioContext && backgroundOscillators.length > 0) {
+                    const time = Date.now() / 1000;
+                    const stressMultiplier = 1 + (gameState.stress / 100) * 0.5;
+                    
+                    backgroundOscillators.forEach((osc, index) => {
+                        const variation = Math.sin(time / (2 + index)) * 3 * stressMultiplier;
+                        const newFreq = osc.baseFreq + variation;
+                        osc.osc.frequency.setValueAtTime(newFreq, audioContext.currentTime);
+                        
+                        // Intensidad basada en el estrés
+                        const intensity = 0.05 + (gameState.stress / 100) * 0.15;
+                        osc.gain.gain.setValueAtTime(intensity, audioContext.currentTime);
+                    });
+                }
+            }, 200);
+        }
+
+        function playDiscoverySound() {
+            if (!audioContext || !gameState.musicEnabled) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.5);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function playTensionSound() {
+            if (!audioContext || !gameState.musicEnabled) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.linearRampToValueAtTime(150, audioContext.currentTime + 1);
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 1);
+        }
+
+        function toggleMusic() {
+            gameState.musicEnabled = !gameState.musicEnabled;
+            const btn = document.getElementById('musicToggle');
+            btn.classList.toggle('active');
+            
+            if (gameState.musicEnabled) {
+                initAudio();
+                btn.textContent = '🎵 Música';
+            } else {
+                if (audioContext) {
+                    backgroundOscillators.forEach(osc => {
+                        try { osc.osc.stop(); } catch(e) {}
+                    });
+                    audioContext.close();
+                    audioContext = null;
+                    backgroundOscillators = [];
+                }
+                btn.textContent = '🔇 Música';
+            }
+        }
+
+        function changeVolume() {
+            const volumes = [0.1, 0.3, 0.5];
+            const currentIndex = volumes.indexOf(gameState.volume);
+            gameState.volume = volumes[(currentIndex + 1) % volumes.length];
+            
+            const btn = document.getElementById('volumeBtn');
+            const icons = ['🔉', '🔊', '📢'];
+            btn.textContent = icons[volumes.indexOf(gameState.volume)] + ' Vol';
+            
+            if (gainNode) {
+                gainNode.gain.setValueAtTime(gameState.volume, audioContext.currentTime);
+            }
+        }
+
+        // Funciones principales del juego
+        function startGame() {
+            document.getElementById('titleScreen').style.display = 'none';
+            document.getElementById('gameInterface').style.display = 'grid';
+            gameState.gameStarted = true;
+            initAudio();
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            updateChapterInfo();
+            updateReputation();
+            updateInventory();
+            updateStress();
+            updateProgress();
+            updateCurrentScene();
+        }
+
+        function updateChapterInfo() {
+            const chapter = gameChapters[gameState.currentChapter];
+            document.getElementById('chapterDisplay').textContent = `Capítulo ${gameState.currentChapter}: ${chapter.title}`;
+            document.getElementById('currentChapter').textContent = gameState.currentChapter;
+        }
+
+        function updateCurrentScene() {
+            const chapter = gameChapters[gameState.currentChapter];
+            const scene = chapter.scenes[gameState.currentScene];
+            
+            document.getElementById('locationTitle').textContent = scene.location;
+            
+            let content = `<p>${scene.description}</p>`;
+            
+            if (scene.thoughts) {
+                content += `<div class="inner-thought">${scene.thoughts}</div>`;
+            }
+            
+            if (scene.dialogue) {
+                content += `<div class="dialogue">${scene.dialogue}</div>`;
+            }
+            
+            document.getElementById('storyContent').innerHTML = content;
+            updateChoices(scene.choices || []);
+        }
+
+        function updateChoices(choices) {
+            const container = document.getElementById('choicesContainer');
+            if (choices.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888; font-style: italic;">Continúa la investigación...</p>';
+                return;
+            }
+
+            let html = '<div class="choices-title">¿Qué decido hacer?</div>';
+            
+            choices.forEach((choice, index) => {
+                // Verificar condiciones si existen
+                if (choice.condition && !choice.condition()) {
+                    return; // Saltar esta opción si no se cumple la condición
+                }
+                
+                const criticalClass = choice.critical ? ' critical' : '';
+                html += `
+                    <button class="choice-btn${criticalClass}" onclick="makeChoice(${index})">
+                        ${choice.text}
+                        ${choice.consequences ? `<div class="choice-consequence">${choice.consequences}</div>` : ''}
+                    </button>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function makeChoice(choiceIndex) {
+            const chapter = gameChapters[gameState.currentChapter];
+            const scene = chapter.scenes[gameState.currentScene];
+            const availableChoices = scene.choices.filter(choice => !choice.condition || choice.condition());
+            const choice = availableChoices[choiceIndex];
+            
+            if (choice && choice.action) {
+                // Registrar la elección
+                gameState.choices.push({
+                    chapter: gameState.currentChapter,
+                    scene: gameState.currentScene,
+                    choice: choiceIndex,
+                    text: choice.text,
+                    timestamp: Date.now()
+                });
+                
+                // Ejecutar la acción
+                choice.action();
+                
+                // Reproducir sonido si es una decisión crítica
+                if (choice.critical) {
+                    playTensionSound();
+                }
+                
+                // Actualizar display después de un breve delay para efectos
+                setTimeout(() => {
+                    updateDisplay();
+                }, 300);
+            }
+        }
+
+        function nextScene() {
+            const chapter = gameChapters[gameState.currentChapter];
+            if (gameState.currentScene < chapter.scenes.length - 1) {
+                gameState.currentScene++;
+                gameState.progress += 5;
+            } else {
+                nextChapter();
+            }
+            updateDisplay();
+        }
+
+        function nextChapter() {
+            if (gameState.currentChapter < Object.keys(gameChapters).length) {
+                gameState.currentChapter++;
+                gameState.currentScene = 0;
+                gameState.progress += 15;
+                updateDisplay();
+            } else {
+                showEnding();
+            }
+        }
+
+        function addClue(clue, critical = false) {
+            if (!gameState.inventory.includes(clue)) {
+                gameState.inventory.push(clue);
+                gameState.cluesFound++;
+                gameState.truthRevealed = Math.min(100, (gameState.cluesFound / 15) * 100);
+                
+                if (critical) {
+                    playDiscoverySound();
+                }
+                
+                updateInventory();
+                updateProgress();
+            }
+        }
+
+        function addRevelation(text) {
+            const content = document.getElementById('storyContent');
+            content.innerHTML += `<div class="revelation">💡 REVELACIÓN: ${text}</div>`;
+            playDiscoverySound();
+            changeStress(5); // Las revelaciones aumentan el estrés
+        }
+
+        function addStoryUpdate(text) {
+            const content = document.getElementById('storyContent');
+            content.innerHTML += `<div class="story-update">${text}</div>`;
+        }
+
+        function changeReputation(faction, amount) {
+            gameState.reputation[faction] = Math.max(0, Math.min(100, gameState.reputation[faction] + amount));
+            updateReputation();
+        }
+
+        function updateReputation() {
+            Object.keys(gameState.reputation).forEach(faction => {
+                const value = gameState.reputation[faction];
+                const bar = document.getElementById(faction + 'Bar');
+                const valueDisplay = document.getElementById(faction + 'Value');
+                
+                if (bar) bar.style.width = value + '%';
+                if (valueDisplay) valueDisplay.textContent = value;
+            });
+        }
+
+        function updateInventory() {
+            const container = document.getElementById('inventory');
+            container.innerHTML = '';
+            
+            if (gameState.inventory.length === 0) {
+                container.innerHTML = '<div style="color: #888; font-style: italic; text-align: center;">Sin evidencias</div>';
+                return;
+            }
+            
+            gameState.inventory.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'inventory-item';
+                if (item.includes('USB') || item.includes('Fotografías') || item.includes('Ubicación') || item.includes('Red de lavado')) {
+                    div.classList.add('critical');
+                }
+                div.textContent = item;
+                div.title = item;
+                container.appendChild(div);
+            });
+        }
+
+        function changeStress(amount) {
+            gameState.stress = Math.max(0, Math.min(100, gameState.stress + amount));
+            updateStress();
+        }
+
+        function updateStress() {
+            const bar = document.getElementById('stressBar');
+            const value = document.getElementById('stressValue');
+            bar.style.width = gameState.stress + '%';
+            value.textContent = gameState.stress + '%';
+        }
+
+        function updateProgress() {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            progressBar.style.width = gameState.progress + '%';
+            progressText.textContent = gameState.progress + '%';
+            
+            document.getElementById('clueCount').textContent = gameState.cluesFound;
+            document.getElementById('truthProgress').textContent = Math.round(gameState.truthRevealed);
+        }
+
+        function showEnding() {
+            let endingTitle, endingContent, endingClass;
+            
+            // Determinar el final basado en las decisiones del jugador
+            if (gameState.flags.liveTransmission) {
+                endingTitle = "El Héroe de la Verdad";
+                endingClass = "hero";
+                endingContent = `
+                    <p>Tu brillante estrategia de transmitir en vivo la confesión de Mendoza cambió todo. La transmisión se volvió viral en minutos, y la presión pública fue tan intensa que los federales actuaron inmediatamente.</p>
+                    <p>Carlos fue rescatado esa misma noche, y toda la red de corrupción fue desmantelada. Mendoza, el jefe de policía Herrera, y una docena de empresarios fueron arrestados. La ciudad comenzó un proceso de sanación que tomará años, pero que finalmente había comenzado.</p>
+                    <p>Tú y Carlos fundaron un nuevo periódico independiente, "Memorias de Asfalto", dedicado a investigar la corrupción y dar voz a los sin voz. La ciudad que una vez los expulsó ahora los celebra como héroes.</p>
+                    <p><strong>Has logrado el mejor final posible. La verdad prevaleció y salvaste a tu amigo.</strong></p>
+                `;
+            } else if (gameState.flags.publishedStory && gameState.flags.knowsLocation) {
+                endingTitle = "El Periodista Valiente";
+                endingClass = "good";
+                endingContent = `
+                    <p>Tu decisión de publicar la historia primero creó la presión necesaria para que las autoridades actuaran. Aunque fue arriesgado, la estrategia funcionó. Los federales llegaron al almacén justo a tiempo para salvar a Carlos.</p>
+                    <p>La mayoría de los corruptos fueron arrestados, aunque algunos lograron escapar del país. Carlos se recuperó completamente de sus heridas, y juntos continuaron exponiendo la corrupción restante en la ciudad.</p>
+                    <p>La ciudad cambió lentamente, pero cambió. Las calles que una vez fueron testigos de tanta injusticia ahora resonaban con esperanza renovada.</p>
+                    <p><strong>Lograste exponer la corrupción y salvar a Carlos. Un final heroico.</strong></p>
+                `;
+            } else if (gameState.flags.heroicSacrifice) {
+                endingTitle = "El Sacrificio del Hermano";
+                endingClass = "bittersweet";
+                endingContent = `
+                    <p>Tu sacrificio no fue en vano. Carlos logró escapar y, con las pruebas que habías recopilado, expuso toda la red de corrupción. Tu muerte se convirtió en el catalizador que la ciudad necesitaba para despertar.</p>
+                    <p>Miles de personas salieron a las calles exigiendo justicia. Tu nombre se convirtió en símbolo de la lucha contra la corrupción. Carlos, devastado pero determinado, continuó tu trabajo.</p>
+                    <p>Un año después, se inauguró el "Centro de Periodismo Investigativo Adrián Vásquez" en tu honor. La ciudad nunca olvidó tu sacrificio.</p>
+                    <p><strong>Diste tu vida por la verdad. Tu legado vivirá para siempre.</strong></p>
+                `;
+            } else if (gameState.flags.sacrificedEvidence) {
+                endingTitle = "El Precio de la Amistad";
+                endingClass = "sad";
+                endingContent = `
+                    <p>Elegiste salvar a Carlos entregando todas las pruebas. Tu amigo vive, pero los corruptos siguen en el poder. Mendoza cumplió su palabra y liberó a Carlos, pero también se aseguró de que nunca más pudieran amenazarlo.</p>
+                    <p>Ambos tuvieron que abandonar la ciudad esa misma noche. La red de corrupción continuó operando, y la ciudad permaneció en las sombras. Pero Carlos vive, y para ti, eso era lo único que importaba.</p>
+                    <p>Años después, desde el exilio, siguieron investigando y eventualmente lograron exponer parte de la corrupción, pero el daño ya estaba hecho.</p>
+                    <p><strong>Salvaste a tu amigo, pero la justicia tuvo un precio muy alto.</strong></p>
+                `;
+            } else if (gameState.flags.contactedFeds && !gameState.flags.rescueAttempt) {
+                endingTitle = "El Camino Seguro";
+                endingClass = "neutral";
+                endingContent = `
+                    <p>Tu decisión de trabajar con los federales fue la más segura, pero también la más lenta. Cuando finalmente llegaron al almacén, Carlos había sido trasladado. Tomó tres semanas más encontrarlo.</p>
+                    <p>Carlos sobrevivió, pero con heridas permanentes. La red de corrupción fue parcialmente desmantelada, pero los peces más grandes escaparon. Aún así, lograste hacer una diferencia significativa.</p>
+                    <p>La ciudad cambió gradualmente, y aunque no fue el final perfecto que esperabas, fue un final donde la justicia, aunque lenta, eventualmente llegó.</p>
+                    <p><strong>Elegiste el camino seguro. No todos los héroes necesitan ser temerarios.</strong></p>
+                `;
+            } else {
+                endingTitle = "El Final Amargo";
+                endingClass = "bad";
+                endingContent = `
+                    <p>A pesar de tus mejores esfuerzos, no lograste salvar a Carlos ni exponer completamente la corrupción. La ciudad sigue siendo la misma, y las memorias de asfalto guardan un secreto más.</p>
+                    <p>Pero tu investigación no fue completamente en vano. Plantaste semillas de duda que algún día florecerán. Otros periodistas continuarán donde tú terminaste, inspirados por tu valentía.</p>
+                    <p>Carlos se convirtió en un mártir silencioso, y su memoria impulsa a otros a continuar la lucha contra la injusticia.</p>
+                    <p><strong>No todos los héroes tienen finales felices, pero todos dejan una marca.</strong></p>
+                `;
+            }
+
+            const endingScreen = document.createElement('div');
+            endingScreen.className = 'ending-screen';
+            endingScreen.innerHTML = `
+                <div class="ending-title">${endingTitle}</div>
+                <div class="ending-content">${endingContent}</div>
+                <div class="ending-stats">
+                    <h3>Estadísticas Finales</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                        <div>
+                            <p><strong>Investigación:</strong></p>
+                            <p>• Pistas encontradas: ${gameState.cluesFound}/15</p>
+                            <p>• Verdad revelada: ${Math.round(gameState.truthRevealed)}%</p>
+                            <p>• Capítulos completados: ${gameState.currentChapter}/5</p>
+                        </div>
+                        <div>
+                            <p><strong>Estado Final:</strong></p>
+                            <p>• Nivel de estrés: ${gameState.stress}%</p>
+                            <p>• Decisiones tomadas: ${gameState.choices.length}</p>
+                            <p>• Decisiones críticas: ${gameState.choices.filter(c => gameChapters[c.chapter]?.scenes[c.scene]?.choices[c.choice]?.critical).length}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <p><strong>Reputación Final:</strong></p>
+                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; font-size: 0.9rem;">
+                            <div>Policía: ${gameState.reputation.police}</div>
+                            <div>Medios: ${gameState.reputation.media}</div>
+                            <div>Ciudadanos: ${gameState.reputation.citizens}</div>
+                            <div>Pandillas: ${gameState.reputation.gangs}</div>
+                            <div>Gobierno: ${gameState.reputation.government}</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 30px;">
+                    <button class="restart-btn" onclick="restartGame()">Jugar de Nuevo</button>
+                    <button class="restart-btn" onclick="showChoicesSummary()">Ver Decisiones</button>
+                </div>
+            `;
+
+            document.body.appendChild(endingScreen);
+            
+            // Cambiar la música para el final
+            if (audioContext && gameState.musicEnabled) {
+                // Detener música de suspenso y crear música de final
+                backgroundOscillators.forEach(osc => {
+                    try { osc.osc.stop(); } catch(e) {}
+                });
+                createEndingMusic();
+            }
+        }
+
+        function createEndingMusic() {
+            if (!audioContext) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4
+            
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 5);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 5);
+        }
+
+        function showChoicesSummary() {
+            const summaryScreen = document.createElement('div');
+            summaryScreen.className = 'ending-screen';
+            summaryScreen.style.zIndex = '300';
+            
+            let choicesHtml = '<h2>Resumen de Decisiones</h2><div style="text-align: left; max-width: 600px;">';
+            
+            gameState.choices.forEach((choice, index) => {
+                const chapter = gameChapters[choice.chapter];
+                const scene = chapter.scenes[choice.scene];
+                const choiceData = scene.choices[choice.choice];
+                
+                choicesHtml += `
+                    <div style="margin: 15px 0; padding: 15px; background: rgba(255,107,53,0.1); border-radius: 8px;">
+                        <strong>Capítulo ${choice.chapter}: ${chapter.title}</strong><br>
+                        <em>${scene.location}</em><br>
+                        <span style="color: #f39c12;">${choiceData.text}</span>
+                    </div>
+                `;
+            });
+            
+            choicesHtml += '</div>';
+            
+            summaryScreen.innerHTML = `
+                ${choicesHtml}
+                <button class="restart-btn" onclick="this.parentElement.remove()">Cerrar</button>
+            `;
+            
+            document.body.appendChild(summaryScreen);
+        }
+
+        function restartGame() {
+            // Detener audio
+            if (audioContext) {
+                backgroundOscillators.forEach(osc => {
+                    try { osc.osc.stop(); } catch(e) {}
+                });
+                audioContext.close();
+                audioContext = null;
+                backgroundOscillators = [];
+            }
+            
+            // Recargar la página
+            location.reload();
+        }
+
+        // Inicialización del juego
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar controles de audio
+            document.getElementById('musicToggle').addEventListener('click', toggleMusic);
+            document.getElementById('volumeBtn').addEventListener('click', changeVolume);
+            
+            // Inicializar display si el juego ya comenzó
+            if (gameState.gameStarted) {
+                updateDisplay();
+            }
+        });
+
+        // Prevenir que el usuario se vaya accidentalmente
+        window.addEventListener('beforeunload', function(e) {
+            if (gameState.gameStarted && gameState.currentChapter < 5) {
+                e.preventDefault();
+                e.returnValue = '¿Estás seguro de que quieres abandonar la investigación?';
+            }
+        });
+
+        // Función para guardar progreso en localStorage (bonus)
+        function saveGame() {
+            localStorage.setItem('memoriasDeAsfalto_save', JSON.stringify(gameState));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('memoriasDeAsfalto_save');
+            if (saved) {
+                gameState = JSON.parse(saved);
+                updateDisplay();
+                return true;
+            }
+            return false;
+        }
+
+        // Auto-guardar cada vez que se toma una decisión
+        function autoSave() {
+            if (gameState.gameStarted) {
+                saveGame();
+            }
+        }
+
+        // Llamar auto-guardar después de cada elección
+        const originalMakeChoice = makeChoice;
+        makeChoice = function(choiceIndex) {
+            originalMakeChoice(choiceIndex);
+            autoSave();
+        };
+    </script>
+</body>
+</html>
